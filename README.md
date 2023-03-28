@@ -2,6 +2,9 @@
 
 Specifically created for Double Dash modding, this plugin creates shader node groups that allow you to preview alpha textures and vertex colors, as well as changing the scene's Gamma and Exposure to better match in-game lighting.
 
+## Demo
+https://user-images.githubusercontent.com/19808950/228373866-43a6f2f2-b21f-4834-968e-75b0c64e1975.mp4
+
 ## How to install
 Go [here](https://raw.githubusercontent.com/GerasSB/BlenderASN/main/auto_shader_pnl.py), right click the page and select *Save As...* to download the script from the repo. Go to *Blender > Edit > Preferences* and in the Add-ons pane click on *Install...*. Select the file you just downloaded and enable it by clicking the checkbox.
 
