@@ -76,15 +76,18 @@ def button_01(context):
         linkin = loopy.active_material.node_tree.links #Create link reference
         alphaGrpNode = currentmat.get('AlphaNode')
         #Linking the texture to the node
-        if currentmat.find('Image Texture') > -1:
-            if currentmat.find('VertexNode') > -1:
-                delVnode = currentmat.get('VertexNode')
-                currentmat.remove(delVnode)
-            getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
-            linkin.new(getTex.outputs[0], alphaGrpNode.inputs[1]) #Links color to group node
-            linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
+        for noderinno in currentmat:
+            if noderinno != currentmat.get('AlphaNode') and noderinno != currentmat.get('Image Texture'):
+                currentmat.remove(noderinno)
+        #if currentmat.find('Image Texture') > -1:
+            #if currentmat.find('VertexNode') > -1:
+                #delVnode = currentmat.get('VertexNode')
+                #currentmat.remove(delVnode)
+        getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
+        linkin.new(getTex.outputs[0], alphaGrpNode.inputs[1]) #Links color to group node
+        linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
             
-            loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
+        loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
             
 class clssAlphaShader(bpy.types.Operator):
     """Give selected meshes the Alpha shader group. Selected mesh needs an image texture for this to work"""
@@ -196,7 +199,7 @@ def linkVrtMats(groupName, nodeName, blendmode, context):
             loopy.active_material.blend_method = blendmode #Sets material blend method to Alpha Hashed
             
 class clssVertexShader(bpy.types.Operator):
-    """Give selected meshes the Vertex shader group. This button won't affect meshes without vertex colors AND image textures"""
+    """Give selected meshes the Vertex shader group. Selected mesh needs to have vertex colors AND image textures for this button to work"""
     bl_idname = "shdr.vertex"
     bl_label = "Vertex Shader Group"
     
@@ -206,7 +209,7 @@ class clssVertexShader(bpy.types.Operator):
         return{'FINISHED'}
 
 class clssVertexTShader(bpy.types.Operator):
-    """Give selected meshes the Vertex shader group. This button won't affect meshes without vertex colors AND image textures"""
+    """Give selected meshes the Vertex Transparency shader group. It allows to see transparency in vertex data. Selected mesh needs vertex colors AND image textures for this button to work"""
     bl_idname = "shdr.vertextrans"
     bl_label = "Vertex Transparency Shader Group"
     
@@ -222,34 +225,30 @@ def button_03(context):
     sO = bpy.context.selected_objects
     for loopy in sO:
         currentmat = loopy.active_material.node_tree.nodes
-        if (currentmat.find('AlphaNode') > -1 or currentmat.find('VertexNode') > -1) and currentmat.find('Image Texture') > -1:
-            if currentmat.find('VertexNode') > -1:
-                #Find and remove Vertex Node Group
-                currentmatdelVRTX = currentmat.get('VertexNode')
-                currentmat.remove(currentmatdelVRTX)
-            if currentmat.find('AlphaNode') > -1:
-                #Find and remove Alpha Node Group
-                currentmatdelAlpha = currentmat.get('AlphaNode')
-                currentmat.remove(currentmatdelAlpha)
+        
+        # Cycle through all nodes and delete them (except for Image Texture nodes)
+        for noderinno in currentmat:
+            if noderinno != currentmat.get('Image Texture'):
+                currentmat.remove(noderinno)
                 
-            #Create Principled BSDF
-            expbsdf = currentmat.new('ShaderNodeBsdfPrincipled')
-            expbsdf.location = (200, 0)
-            expbsdf.inputs[7].default_value = 0
-            
-            #Create Output Material
-            exout = currentmat.new('ShaderNodeOutputMaterial')
-            exout.location = (500, 0)
-            
-            #Linking the texture to the nodes
-            linkin = loopy.active_material.node_tree.links #Create link reference
-            
-            getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
-            linkin.new(getTex.outputs[0], expbsdf.inputs[0]) #Links color to group node
-            linkin.new(expbsdf.outputs[0], exout.inputs[0]) #Links alpha to group node
+        #Create Principled BSDF
+        expbsdf = currentmat.new('ShaderNodeBsdfPrincipled')
+        expbsdf.location = (200, 0)
+        expbsdf.inputs[7].default_value = 0
+        
+        #Create Output Material
+        exout = currentmat.new('ShaderNodeOutputMaterial')
+        exout.location = (500, 0)
+        
+        #Linking the texture to the nodes
+        linkin = loopy.active_material.node_tree.links #Create link reference
+        
+        getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
+        linkin.new(getTex.outputs[0], expbsdf.inputs[0]) #Links color to group node
+        linkin.new(expbsdf.outputs[0], exout.inputs[0]) #Links alpha to group node
 
 class clssExport(bpy.types.Operator):
-    """Blender can't export materials with shader groups, so use this button before exporting."""
+    """Blender can't export materials with shader groups, so use this button before exporting"""
     bl_idname = "shdr.export"
     bl_label = "Remove Groups (for export)"
     
