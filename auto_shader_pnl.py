@@ -85,7 +85,6 @@ def button_01(context):
             linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
             
             loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
-            loopy.active_material.use_backface_culling = True
             
 class clssAlphaShader(bpy.types.Operator):
     """Give selected meshes the Alpha shader group. Selected mesh needs an image texture for this to work"""
@@ -158,7 +157,7 @@ def createVrtxGroup(vertexGroup, context):
     vertexGroup.links.new(vertexMixRGB.outputs[0], vertexBsdf.inputs[0])
     return vertexVCnode, vertexBsdf
 
-def linkVrtMats(groupName, nodeName, context):
+def linkVrtMats(groupName, nodeName, blendmode, context):
     #Creating the node group inside the material
     sO = bpy.context.selected_objects
     for loopy in sO:
@@ -183,18 +182,18 @@ def linkVrtMats(groupName, nodeName, context):
             alphaGrpNode = currentmat.get(nodeName)
             #Linking the texture to the node
             for noderinno in currentmat:
-                if currentmat != currentmat.get(nodeName):
-                    loopy.active_material.node_tree.nodes.remove(currentmat)
+                if (noderinno != currentmat.get('Image Texture')) and (noderinno !=currentmat.get(nodeName)):
+                    currentmat.remove(noderinno)
             #if currentmat.find('Image Texture') > -1:
                 #if currentmat.find('AlphaNode') > -1:
                     #delAnode = currentmat.get('AlphaNode')
                     #currentmat.remove(delAnode)
                     
-                getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
-                linkin.new(getTex.outputs[0], alphaGrpNode.inputs[1]) #Links color to group node
-                linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
-                
-                loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
+            getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
+            linkin.new(getTex.outputs[0], alphaGrpNode.inputs[1]) #Links color to group node
+            linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
+            
+            loopy.active_material.blend_method = blendmode #Sets material blend method to Alpha Hashed
             
 class clssVertexShader(bpy.types.Operator):
     """Give selected meshes the Vertex shader group. This button won't affect meshes without vertex colors AND image textures"""
@@ -203,7 +202,7 @@ class clssVertexShader(bpy.types.Operator):
     
     def execute(self,context):
         button_02(context)
-        linkVrtMats('VertexGroup','VertexNode', context)
+        linkVrtMats('VertexGroup','VertexNode', 'HASHED', context)
         return{'FINISHED'}
 
 class clssVertexTShader(bpy.types.Operator):
@@ -213,7 +212,7 @@ class clssVertexTShader(bpy.types.Operator):
     
     def execute(self,context):
         button_05(context)
-        linkVrtMats('VertexTGroup','VertexTNode', context)
+        linkVrtMats('VertexTGroup','VertexTNode', 'BLEND', context)
         return{'FINISHED'}
 
 #Button 3
