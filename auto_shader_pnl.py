@@ -85,9 +85,10 @@ def button_01(context):
             linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
             
             loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
+            loopy.active_material.use_backface_culling = True
             
 class clssAlphaShader(bpy.types.Operator):
-    """Give selected meshes the Alpha shader group. Use this one before you try the Vertex Nodes button."""
+    """Give selected meshes the Alpha shader group. Selected mesh needs an image texture for this to work"""
     bl_idname = "shdr.alpha"
     bl_label = "Alpha Shader Group"
     
@@ -95,57 +96,69 @@ class clssAlphaShader(bpy.types.Operator):
         button_01(context)
         return{'FINISHED'}
 
-
 #Button 2
 def button_02(context):
     #This entire IF statement creates a shader group on the Blend file and puts everything inside it. Doesn't actually put
     #the shader group inside the material
     if bpy.data.node_groups.find('VertexGroup') == -1: #Checks if the blend file already has the group
         vertexGroup = bpy.data.node_groups.new('VertexGroup', 'ShaderNodeTree') #Creates the group
+        createVrtxGroup(vertexGroup, context)
         
-        #Create Transparent Shader inside group and move it
-        vertextransparent = vertexGroup.nodes.new('ShaderNodeBsdfTransparent')
-        vertextransparent.location = (-200,200)
+def button_05(context):
+    #This entire IF statement creates a shader group on the Blend file and puts everything inside it. Doesn't actually put
+    #the shader group inside the material
+    if bpy.data.node_groups.find('VertexTGroup') == -1: #Checks if the blend file already has the group
+        vertexGroup = bpy.data.node_groups.new('VertexTGroup', 'ShaderNodeTree') #Creates the group
+        vertexVCnode, vertexBsdf = createVrtxGroup(vertexGroup, context)
+        vertexGroup.links.new(vertexVCnode.outputs[1], vertexBsdf.inputs[21])
         
-        #Create Mix Shader inside group and move it
-        vertexMixShader = vertexGroup.nodes.new('ShaderNodeMixShader')
-        vertexMixShader.location = (0,0)
         
-        #Create PrincipledBSDF Shader and move it
-        vertexBsdf = vertexGroup.nodes.new('ShaderNodeBsdfPrincipled')
-        vertexBsdf.location = (-500,0)
-        vertexBsdf.inputs[7].default_value = 0
-        
-        #Create Material Output and move it
-        vertexMatOutput = vertexGroup.nodes.new('ShaderNodeOutputMaterial')
-        vertexMatOutput.location = (200,0)
+def createVrtxGroup(vertexGroup, context):        
+    #Create Transparent Shader inside group and move it
+    vertextransparent = vertexGroup.nodes.new('ShaderNodeBsdfTransparent')
+    vertextransparent.location = (-200,200)
+    
+    #Create Mix Shader inside group and move it
+    vertexMixShader = vertexGroup.nodes.new('ShaderNodeMixShader')
+    vertexMixShader.location = (0,0)
+    
+    #Create PrincipledBSDF Shader and move it
+    vertexBsdf = vertexGroup.nodes.new('ShaderNodeBsdfPrincipled')
+    vertexBsdf.location = (-500,0)
+    vertexBsdf.inputs[7].default_value = 0
+    
+    #Create Material Output and move it
+    vertexMatOutput = vertexGroup.nodes.new('ShaderNodeOutputMaterial')
+    vertexMatOutput.location = (200,0)
 
-        #Create Node Input and move it
-        vertexInput = vertexGroup.nodes.new('NodeGroupInput')
-        vertexInput.location = (-700,0)
-        
-        #Creates sockets for the group inputs
-        vertexGroup.inputs.new('NodeSocketFloatFactor', 'Alpha')
-        vertexGroup.inputs.new('NodeSocketColor', 'Color')
-        
-        vertexVCnode = vertexGroup.nodes.new('ShaderNodeVertexColor')
-        vertexVCnode.location = (-700,-200)
-        
-        vertexMixRGB = vertexGroup.nodes.new('ShaderNodeMixRGB')
-        vertexMixRGB.location = (-600,0)
-        vertexMixRGB.inputs[0].default_value = 1
-        vertexMixRGB.blend_type = 'MULTIPLY'
-        
-        
-        #Links all nodes together
-        vertexGroup.links.new(vertexBsdf.outputs[0], vertexMixShader.inputs[2])
-        vertexGroup.links.new(vertextransparent.outputs[0], vertexMixShader.inputs[1])
-        vertexGroup.links.new(vertexMixShader.outputs[0], vertexMatOutput.inputs[0])
-        vertexGroup.links.new(vertexInput.outputs[1], vertexMixRGB.inputs[1])
-        vertexGroup.links.new(vertexInput.outputs[0], vertexMixShader.inputs[0])
-        vertexGroup.links.new(vertexVCnode.outputs[0], vertexMixRGB.inputs[2])
-        vertexGroup.links.new(vertexMixRGB.outputs[0], vertexBsdf.inputs[0])
+    #Create Node Input and move it
+    vertexInput = vertexGroup.nodes.new('NodeGroupInput')
+    vertexInput.location = (-700,0)
+    
+    #Creates sockets for the group inputs
+    vertexGroup.inputs.new('NodeSocketFloatFactor', 'Alpha')
+    vertexGroup.inputs.new('NodeSocketColor', 'Color')
+    
+    vertexVCnode = vertexGroup.nodes.new('ShaderNodeVertexColor')
+    vertexVCnode.location = (-700,-200)
+    
+    vertexMixRGB = vertexGroup.nodes.new('ShaderNodeMixRGB')
+    vertexMixRGB.location = (-600,0)
+    vertexMixRGB.inputs[0].default_value = 1
+    vertexMixRGB.blend_type = 'MULTIPLY'
+    
+    
+    #Links all nodes together
+    vertexGroup.links.new(vertexBsdf.outputs[0], vertexMixShader.inputs[2])
+    vertexGroup.links.new(vertextransparent.outputs[0], vertexMixShader.inputs[1])
+    vertexGroup.links.new(vertexMixShader.outputs[0], vertexMatOutput.inputs[0])
+    vertexGroup.links.new(vertexInput.outputs[1], vertexMixRGB.inputs[1])
+    vertexGroup.links.new(vertexInput.outputs[0], vertexMixShader.inputs[0])
+    vertexGroup.links.new(vertexVCnode.outputs[0], vertexMixRGB.inputs[2])
+    vertexGroup.links.new(vertexMixRGB.outputs[0], vertexBsdf.inputs[0])
+    return vertexVCnode, vertexBsdf
 
+def linkVrtMats(groupName, nodeName, context):
     #Creating the node group inside the material
     sO = bpy.context.selected_objects
     for loopy in sO:
@@ -161,18 +174,22 @@ def button_02(context):
                 currentmat.remove(currentmatdelOutput)
             
             #Creates Group Node inside material if there is none
-            if currentmat.find('VertexNode') == -1:
-                newNodeGroup = currentmat.new('ShaderNodeGroup')#Add empty Node Group to material
-                newNodeGroup.node_tree = bpy.data.node_groups['VertexGroup']#Convert empty Node Group to the TransparencyGroup
-                loopy.active_material.node_tree.nodes["Group"].name = "VertexNode"
+            if currentmat.find(nodeName) == -1:
+                newNodeGroup = currentmat.new('ShaderNodeGroup') #Add empty Node Group to material
+                newNodeGroup.node_tree = bpy.data.node_groups[groupName] #Convert empty Node Group to the VertexGroup
+                loopy.active_material.node_tree.nodes["Group"].name = nodeName
             
             linkin = loopy.active_material.node_tree.links #Create link reference
-            alphaGrpNode = currentmat.get('VertexNode')
+            alphaGrpNode = currentmat.get(nodeName)
             #Linking the texture to the node
-            if currentmat.find('Image Texture') > -1:
-                if currentmat.find('AlphaNode') > -1:
-                    delAnode = currentmat.get('AlphaNode')
-                    currentmat.remove(delAnode)
+            for noderinno in currentmat:
+                if currentmat != currentmat.get(nodeName):
+                    loopy.active_material.node_tree.nodes.remove(currentmat)
+            #if currentmat.find('Image Texture') > -1:
+                #if currentmat.find('AlphaNode') > -1:
+                    #delAnode = currentmat.get('AlphaNode')
+                    #currentmat.remove(delAnode)
+                    
                 getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
                 linkin.new(getTex.outputs[0], alphaGrpNode.inputs[1]) #Links color to group node
                 linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
@@ -180,12 +197,23 @@ def button_02(context):
                 loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
             
 class clssVertexShader(bpy.types.Operator):
-    """Give selected meshes the Vertex shader group. This button won't affect meshes without vertex colors, so make sure you've used the Alpha Nodes button before this one."""
+    """Give selected meshes the Vertex shader group. This button won't affect meshes without vertex colors AND image textures"""
     bl_idname = "shdr.vertex"
     bl_label = "Vertex Shader Group"
     
     def execute(self,context):
         button_02(context)
+        linkVrtMats('VertexGroup','VertexNode', context)
+        return{'FINISHED'}
+
+class clssVertexTShader(bpy.types.Operator):
+    """Give selected meshes the Vertex shader group. This button won't affect meshes without vertex colors AND image textures"""
+    bl_idname = "shdr.vertextrans"
+    bl_label = "Vertex Transparency Shader Group"
+    
+    def execute(self,context):
+        button_05(context)
+        linkVrtMats('VertexTGroup','VertexTNode', context)
         return{'FINISHED'}
 
 #Button 3
@@ -238,7 +266,7 @@ def button_04(context):
 
             
 class clssClr(bpy.types.Operator):
-    """Change Exposure and Gamma settings to better match Double Dash's lighting, for more accurate viewport previews in Render mode."""
+    """Change Exposure and Gamma settings to better match Double Dash's lighting, for more accurate viewport previews in Eevee Render Mode"""
     bl_idname = "shdr.color"
     bl_label = "Change Exposure & Gamma"
     
@@ -263,6 +291,9 @@ class SHD_PT_Panel(Panel):
         #Vertex Button
         self.layout.operator("shdr.vertex")
         
+        #Vertex Transparency Button
+        self.layout.operator("shdr.vertextrans")
+        
         #Remove Button
         self.layout.operator("shdr.export")
         
@@ -282,6 +313,7 @@ def register():
     bpy.utils.register_class(SHD_PT_Panel)
     bpy.utils.register_class(clssAlphaShader)
     bpy.utils.register_class(clssVertexShader)
+    bpy.utils.register_class(clssVertexTShader)
     bpy.utils.register_class(clssExport)
     bpy.utils.register_class(SHD_PT_Panel2)
     bpy.utils.register_class(clssClr)
@@ -289,6 +321,8 @@ def register():
 def unregister():
     bpy.utils.register_class(SHD_PT_Panel)
     bpy.utils.register_class(clssAlphaShader)
+    bpy.utils.register_class(clssVertexShader)
+    bpy.utils.register_class(clssVertexTShader)
     bpy.utils.register_class(clssExport)
     bpy.utils.register_class(SHD_PT_Panel2)
     bpy.utils.register_class(clssClr)
