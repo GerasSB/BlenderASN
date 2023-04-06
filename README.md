@@ -17,6 +17,8 @@ In the 3D viewport, you'll find a new panel within the N menu called ASN. That p
 
 * **Vertex Shader Group:** Creates a node group in the active material of all selected meshes, which allows you to see texture transparency and vertex colors. This button does nothing if the mesh doesn't contain vertex colors *and* if the material doesn't have a texture.
 
+* **Vertex Transparency Shader Group:** Creates a node group in the active material of all selected meshess, which allows you to see texture transparency and vertex colors *with their transparency data*. This button does nothing if the mesh doesn't contain vertex colors *and* if the material doesn't have a texture.
+
 * **Remove Groups (for export):** Blender can't export materials with shader node groups, so use this button to remove groups from the materials of all selected meshes.
 
 You can quickly swap node groups by just clicking the button of the node you wanna replace it with.
