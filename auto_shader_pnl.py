@@ -215,7 +215,7 @@ class clssVertexTShader(bpy.types.Operator):
     
     def execute(self,context):
         button_05(context)
-        linkVrtMats('VertexTGroup','VertexTNode', 'BLEND', context)
+        linkVrtMats('VertexTGroup','VertexTNode', 'HASHED', context)
         return{'FINISHED'}
 
 #Button 3 - Remove groups
