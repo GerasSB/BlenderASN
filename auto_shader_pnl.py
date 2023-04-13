@@ -359,6 +359,41 @@ def checkSelection(self, context):
             self.report({'ERROR'}, "One of your meshes doesn't have a material assigned. Aborting.")
             raise ValueError("One of your meshes doesn't have a material assigned")
 
+def roadtypeInfo(self, context):
+    roadtypes = {
+    "Roadtype_0x00": "Medium offroad, mud",
+    "Roadtype_0x01": "Normal road",
+    "Roadtype_0x02": "Kart and item wall",
+    "Roadtype_0x03": "Medium offroad, grass",
+    "Roadtype_0x04": "Slippery ice road",
+    "Roadtype_0x05": "Road-level deadzone",
+    "Roadtype_0x06": "???",
+    "Roadtype_0x07": "Ramp boost",
+    "Roadtype_0x08": "Boost",
+    "Roadtype_0x09": "Cannon",
+    "Roadtype_0x0A": "Aerial deadzone",
+    "Roadtype_0x0B": "Sand road",
+    "Roadtype_0x0C": "Weak sand offroad",
+    "Roadtype_0x0D": "Pipe teleportation",
+    "Roadtype_0x0E": "Sand deadzone",
+    "Roadtype_0x0F": "Water/lava deadzone",
+    "Roadtype_0x10": "Quicksand sinkhole",
+    "Roadtype_0x11": "Sand deadzone w/ water",
+    "Roadtype_0x12": "Kart-exclusive wall wall",
+    "Roadtype_0x13": "Heavy offroad",
+    "Roadtype_0x14": "Ramp boost",
+    }
+
+    material_slot = bpy.context.active_object.active_material.name
+    for type in roadtypes:
+        if type in material_slot:
+            context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
+            return {'FINISHED'}
+    self.report({'ERROR'}, 'No collision has the name ' + "'" + material_slot + "'")
+    context.scene.my_tool.roadinfo = 'Not a valid collision name'
+                 
+
+
 class SHD_PT_Panel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -412,6 +447,15 @@ class Delete_Vertical_Geometry(bpy.types.Operator):
         deleteVerticalGeometry(context)
         return{'FINISHED'}
     
+class Roadtype_Info(bpy.types.Operator):
+    """Tells you the type of collision of your currently active material"""
+    bl_idname = "shdr.roadtypeinfo"
+    bl_label = "Roadtype Info"
+    
+    def execute(self, context):
+        roadtypeInfo(self, context)
+        return{'FINISHED'}
+    
 
 # Export Panel
 class SHD_PT_Panel3(Panel):
@@ -449,6 +493,9 @@ class SHD_PT_Panel4(Panel):
         
         self.layout.operator("shdr.removevertical")
         self.layout.prop(my_tool, 'vertical_strength')
+        self.layout.separator()
+        self.layout.operator("shdr.roadtypeinfo")
+        self.layout.label(text=my_tool.roadinfo)
         
 class MyProperties(bpy.types.PropertyGroup):
     
@@ -457,6 +504,8 @@ class MyProperties(bpy.types.PropertyGroup):
         default="")
         
     vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0, soft_max=1, default=0.63)
+    
+    roadinfo : bpy.props.StringProperty(name='')
 
 
         
@@ -474,6 +523,7 @@ def register():
     bpy.utils.register_class(class_export_dae)
     bpy.utils.register_class(class_export_obj)
     bpy.utils.register_class(Delete_Vertical_Geometry)
+    bpy.utils.register_class(Roadtype_Info)
     bpy.utils.register_class(MyProperties)
     bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=MyProperties)
 
