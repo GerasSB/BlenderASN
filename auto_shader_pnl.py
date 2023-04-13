@@ -272,6 +272,61 @@ class clssClr(bpy.types.Operator):
     def execute(self,context):
         button_04(context)
         return{'FINISHED'}
+
+# Export DAE Class   
+class class_export_dae(bpy.types.Operator):
+    """Export all selected objects as DAE to a 'course' folder inside the Blender file's current directory"""
+    bl_idname = "shdr.exportdae"
+    bl_label = "Export Selection as DAE"
+    
+    def execute(self,context):
+        exportChecks(self, context, '.dae')
+        return{'FINISHED'}
+
+class class_export_obj(bpy.types.Operator):
+    """Export all selected objects as OBJ to a 'course_collision' folder inside the Blender file's current directory"""
+    bl_idname = "shdr.exportobj"
+    bl_label = "Export Selection as OBJ"
+    
+    def execute(self,context):
+        exportChecks(self, context, '.obj')
+        return{'FINISHED'}
+
+def daeExport(pathname, context):
+        button_03(context)
+        bpy.ops.wm.collada_export(filepath=pathname, selected=True, triangulate=True)
+
+def objExport(pathname, context):
+        button_03(context)
+        bpy.ops.wm.obj_export(filepath=pathname, export_selected_objects=True, export_triangulated_mesh=True)
+
+def setPathname(self, context, type, course_name):
+    pathname = bpy.context.blend_data.filepath
+    filename = bpy.path.basename(bpy.context.blend_data.filepath)
+    if type == '.dae':
+        pathname = pathname.removesuffix(filename) + 'course/'
+        filename = course_name + '_course.dae'
+        pathname = pathname + filename
+        daeExport(pathname, context)
+        self.report({'INFO'}, 'File exported to ' + pathname)
+    elif type == '.obj':
+        pathname = pathname.removesuffix(filename) + 'course_collision/'
+        filename = course_name + '_course.obj'
+        pathname = pathname + filename
+        objExport(pathname, context)
+        self.report({'INFO'}, 'File exported to ' + pathname)
+        
+# Some checks before exporting DAE and returns the path it'll export to
+def exportChecks(self, context, type):
+    course_name = context.scene.my_tool.course_name
+    if bpy.context.selected_objects == []:
+        self.report({'ERROR'}, 'Please select the objects to export and try again')
+    elif course_name == '':
+        self.report({'ERROR'}, "Please enter your course's name")
+    elif bpy.context.blend_data.filepath != []:
+        setPathname(self, context, type, course_name)
+    else:
+        self.report({'ERROR'}, 'Save your Blender project somewhere before exporting')
         
 #--Panel--
 from bpy.types import Panel
@@ -306,6 +361,40 @@ class SHD_PT_Panel2(Panel):
         
         #Alpha Button
         self.layout.operator("shdr.color")
+
+# Export Panel
+class SHD_PT_Panel3(Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_label = "Export"
+    bl_category = "ASN"
+    
+    def draw(self, context):
+        
+        my_tool = context.scene.my_tool
+        
+        
+        #Operators
+        
+        #Course name
+        row = self.layout.row()
+        row.label(text = 'Course Name')
+        self.layout.prop(my_tool, 'course_name')
+        self.layout.separator()
+        
+        #Export button
+        self.layout.operator("shdr.exportdae")
+        self.layout.operator("shdr.exportobj")
+        
+class MyProperties(bpy.types.PropertyGroup):
+    
+    course_name : bpy.props.StringProperty(name='',
+        description="Only enter the course's unique identifier, WITHOUT _course. Example: luigi",
+        default="luigi")
+        
+
+
+
         
 #--Blender stuff--        
 def register():
@@ -315,7 +404,12 @@ def register():
     bpy.utils.register_class(clssVertexTShader)
     bpy.utils.register_class(clssExport)
     bpy.utils.register_class(SHD_PT_Panel2)
+    bpy.utils.register_class(SHD_PT_Panel3)
     bpy.utils.register_class(clssClr)
+    bpy.utils.register_class(class_export_dae)
+    bpy.utils.register_class(class_export_obj)
+    bpy.utils.register_class(MyProperties)
+    bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=MyProperties)
 
 def unregister():
     bpy.utils.register_class(SHD_PT_Panel)
@@ -324,7 +418,11 @@ def unregister():
     bpy.utils.register_class(clssVertexTShader)
     bpy.utils.register_class(clssExport)
     bpy.utils.register_class(SHD_PT_Panel2)
+    bpy.utils.register_class(SHD_PT_Panel3)
     bpy.utils.register_class(clssClr)
+    bpy.utils.register_class(class_export_dae)
+    bpy.utils.register_class(class_export_obj)
+    del bpy.types.Scene.my_tool
     
 if __name__ == "__main__":
         register()
