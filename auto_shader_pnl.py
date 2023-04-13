@@ -13,6 +13,7 @@ bl_info = {
 
 
 import bpy
+import os
 
 #--Operators--
 
@@ -95,6 +96,7 @@ class clssAlphaShader(bpy.types.Operator):
     bl_label = "Alpha Shader Group"
     
     def execute(self,context):
+        checkSelection(self, context)
         button_01(context)
         return{'FINISHED'}
 
@@ -204,6 +206,7 @@ class clssVertexShader(bpy.types.Operator):
     bl_label = "Vertex Shader Group"
     
     def execute(self,context):
+        checkSelection(self, context)
         button_02(context)
         linkVrtMats('VertexGroup','VertexNode', 'HASHED', context)
         return{'FINISHED'}
@@ -214,6 +217,7 @@ class clssVertexTShader(bpy.types.Operator):
     bl_label = "Vertex Transparency Shader Group"
     
     def execute(self,context):
+        checkSelection(self, context)
         button_05(context)
         linkVrtMats('VertexTGroup','VertexTNode', 'HASHED', context)
         return{'FINISHED'}
@@ -254,6 +258,7 @@ class clssExport(bpy.types.Operator):
     bl_label = "Remove Groups (for export)"
     
     def execute(self,context):
+        checkSelection(self, context)
         button_03(context)
         return{'FINISHED'} 
     
@@ -280,6 +285,7 @@ class class_export_dae(bpy.types.Operator):
     bl_label = "Export Selection as DAE"
     
     def execute(self,context):
+        checkSelection(self, context)
         exportChecks(self, context, '.dae')
         return{'FINISHED'}
 
@@ -289,6 +295,7 @@ class class_export_obj(bpy.types.Operator):
     bl_label = "Export Selection as OBJ"
     
     def execute(self,context):
+        checkSelection(self, context)
         exportChecks(self, context, '.obj')
         return{'FINISHED'}
 
@@ -298,19 +305,22 @@ def daeExport(pathname, context):
 
 def objExport(pathname, context):
         button_03(context)
-        bpy.ops.wm.obj_export(filepath=pathname, export_selected_objects=True, export_triangulated_mesh=True)
+        bpy.ops.wm.obj_export(filepath=pathname, export_selected_objects=True, export_triangulated_mesh=True, check_existing=False)
 
 def setPathname(self, context, type, course_name):
     pathname = bpy.context.blend_data.filepath
     filename = bpy.path.basename(bpy.context.blend_data.filepath)
     if type == '.dae':
-        pathname = pathname.removesuffix(filename) + 'course/'
+        pathname = pathname.removesuffix(filename) + 'course\\'
         filename = course_name + '_course.dae'
         pathname = pathname + filename
         daeExport(pathname, context)
         self.report({'INFO'}, 'File exported to ' + pathname)
+        
     elif type == '.obj':
-        pathname = pathname.removesuffix(filename) + 'course_collision/'
+        pathname = pathname.removesuffix(filename) + 'course_collision\\'
+        if not os.path.exists(pathname):
+            os.makedirs(pathname)
         filename = course_name + '_course.obj'
         pathname = pathname + filename
         objExport(pathname, context)
@@ -319,17 +329,25 @@ def setPathname(self, context, type, course_name):
 # Some checks before exporting DAE and returns the path it'll export to
 def exportChecks(self, context, type):
     course_name = context.scene.my_tool.course_name
-    if bpy.context.selected_objects == []:
-        self.report({'ERROR'}, 'Please select the objects to export and try again')
-    elif course_name == '':
-        self.report({'ERROR'}, "Please enter your course's name")
-    elif bpy.context.blend_data.filepath != []:
-        setPathname(self, context, type, course_name)
+    if bpy.context.blend_data.filepath != '':
+        if bpy.context.selected_objects == []:
+            self.report({'ERROR'}, 'Please select the objects to export and try again')
+        elif course_name == '':
+            self.report({'ERROR'}, "Please enter your course's name")
+        else:
+            setPathname(self, context, type, course_name)
     else:
         self.report({'ERROR'}, 'Save your Blender project somewhere before exporting')
         
 #--Panel--
 from bpy.types import Panel
+
+def checkSelection(self, context):
+    for i in bpy.context.selected_objects:
+        if i.name not in bpy.data.meshes.keys():
+            raise ValueError("You're selecting a non-mesh object. Aborting")
+        elif i.active_material == None:
+            raise ValueError("One of your meshes doesn't have a material assigned")
 
 class SHD_PT_Panel(Panel):
     bl_space_type = "VIEW_3D"
@@ -389,8 +407,8 @@ class SHD_PT_Panel3(Panel):
 class MyProperties(bpy.types.PropertyGroup):
     
     course_name : bpy.props.StringProperty(name='',
-        description="Only enter the course's unique identifier, WITHOUT _course. Example: luigi",
-        default="luigi")
+        description="Only enter the course's unique identifier, WITHOUT _course. Example: 'luigi'",
+        default="")
         
 
 

@@ -21,12 +21,23 @@ In the 3D viewport, you'll find a new panel within the N menu called ASN. That p
 
 **These 3 buttons will give you an error if you try to apply them on non-mesh objects.**
 
-* **Remove Groups (for export):** Blender can't export materials with shader node groups, so use this button to remove groups from the materials of all selected meshes.
-
-Tip 1: You can quickly swap node groups by just clicking the button of the node you wanna replace it with.
-
-Tip 2: If you wanna apply these settings to all selected meshes, I recommend clicking the `Alpa Shader Group button` first and then the `Vertex Shader Group` button. This way every object on your scene (assuming they have image textures) will have a Node Group applied.
+* **Remove Groups (for export):** Blender can't export materials with shader node groups, so use this button to remove groups from the materials of all selected meshes. ***NO LONGER NEEDED IF USING THE NEW EXPORT BUTTONS***
 
 ### Viewport Settings
 
 * **Change Exposure & Gamma:** Change Exposure and Gamma settings to better match Double Dash's lighting, for more accurate viewport previews in Render mode.
+### Export
+
+* **Course Name:** Gives your exports a name. You only need to add the course's unique identifier, so *don't* add `_course` to the name. Just call it `luigi`, or `rainbow`, for example.
+
+* **Export Selection as DAE:** Exports all selected objects and their textures as a file named `[coursename]_course.dae` to a folder called `course` (will be created if it doesn't exist) inside the directory where the current Blender file is saved.
+
+* **Export Selecttion as OBJ:** Exports all selected objects as a file called `[coursename]_course.obj` to a folder called `course_collision` (will be created if it doesn't exist) inside the directory where the current Blender file is saved.
+
+These buttons export with default settings, except for `Selection Only` and `Triangulate` which are on.
+
+### Misc. tips
+
+Tip 1: You can quickly swap node groups by just clicking the button of the node you wanna replace it with.
+
+Tip 2: If you wanna apply these settings to all selected meshes, I recommend clicking the `Alpha Shader Group button` first and then the `Vertex Shader Group` button. This way every object on your scene (assuming they have image textures) will have a Node Group applied.
