@@ -91,7 +91,8 @@ def button_01(context):
         loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
             
 class clssAlphaShader(bpy.types.Operator):
-    """Give selected meshes the Alpha shader group. Selected mesh needs an image texture for this to work"""
+    """Give selected meshes the Alpha shader group. Selected mesh needs an image
+texture for this to work"""
     bl_idname = "shdr.alpha"
     bl_label = "Alpha Shader Group"
     
@@ -201,7 +202,8 @@ def linkVrtMats(groupName, nodeName, blendmode, context):
             loopy.active_material.blend_method = blendmode #Sets material blend method to Alpha Hashed
             
 class clssVertexShader(bpy.types.Operator):
-    """Give selected meshes the Vertex shader group. Selected mesh needs to have vertex colors AND image textures for this button to work"""
+    """Give selected meshes the Vertex shader group. Selected mesh needs to have
+vertex colors AND image textures for this button to work"""
     bl_idname = "shdr.vertex"
     bl_label = "Vertex Shader Group"
     
@@ -212,9 +214,11 @@ class clssVertexShader(bpy.types.Operator):
         return{'FINISHED'}
 
 class clssVertexTShader(bpy.types.Operator):
-    """Give selected meshes the Vertex Transparency shader group. It allows to see transparency in vertex data. Selected mesh needs vertex colors AND image textures for this button to work"""
+    """Give selected meshes the Vertex Transparency shader group. It allows to
+see transparency in vertex data. Selected mesh needs vertex colors AND image
+textures for this button to work"""
     bl_idname = "shdr.vertextrans"
-    bl_label = "Vertex Transparency Shader Group"
+    bl_label = "Vertex Transparency Group"
     
     def execute(self,context):
         checkSelection(self, context)
@@ -253,7 +257,8 @@ def button_03(context):
             linkin.new(expbsdf.outputs[0], exout.inputs[0]) #Links alpha to group node
 
 class clssExport(bpy.types.Operator):
-    """Blender can't export materials with shader groups, so use this button before exporting"""
+    """Blender can't export materials with shader groups, so use this button
+before exporting"""
     bl_idname = "shdr.export"
     bl_label = "Remove Groups (for export)"
     
@@ -270,7 +275,8 @@ def button_04(context):
 
             
 class clssClr(bpy.types.Operator):
-    """Change Exposure and Gamma settings to better match Double Dash's lighting, for more accurate viewport previews in Eevee Render Mode"""
+    """Change Exposure and Gamma settings to better match Double Dash's lighting,
+for more accurate viewport previews in Eevee Render Mode"""
     bl_idname = "shdr.color"
     bl_label = "Change Exposure & Gamma"
     
@@ -280,7 +286,8 @@ class clssClr(bpy.types.Operator):
 
 # Export DAE Class   
 class class_export_dae(bpy.types.Operator):
-    """Export all selected objects as DAE to a 'course' folder inside the Blender file's current directory"""
+    """Export all selected objects as DAE to a 'course' folder inside the Blender
+file's current directory"""
     bl_idname = "shdr.exportdae"
     bl_label = "Export Selection as DAE"
     
@@ -290,7 +297,8 @@ class class_export_dae(bpy.types.Operator):
         return{'FINISHED'}
 
 class class_export_obj(bpy.types.Operator):
-    """Export all selected objects as OBJ to a 'course_collision' folder inside the Blender file's current directory"""
+    """Export all selected objects as OBJ to a 'course_collision' folder inside
+the Blender file's current directory"""
     bl_idname = "shdr.exportobj"
     bl_label = "Export Selection as OBJ"
     
@@ -380,6 +388,28 @@ class SHD_PT_Panel2(Panel):
         #Alpha Button
         self.layout.operator("shdr.color")
 
+def deleteVerticalGeometry(context):
+    strength = context.scene.my_tool.vertical_strength * 0.24
+    bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_mode(type='FACE')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.mesh.primitive_cylinder_add(vertices=200, end_fill_type='NOTHING', enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+    bpy.ops.mesh.select_similar(type='NORMAL', threshold=strength)
+    bpy.ops.mesh.delete(type='FACE')
+    
+class Delete_Vertical_Geometry(bpy.types.Operator):
+    """Removes all* vertical geometry from the selected object(s).
+    
+* Adjust the strength to taste. The default of 0.63 is recommended"""
+    bl_idname = "shdr.removevertical"
+    bl_label = "Remove Vertical Geometry"
+    
+    def execute(self, context):
+        deleteVerticalGeometry(context)
+        return{'FINISHED'}
+    
+
 # Export Panel
 class SHD_PT_Panel3(Panel):
     bl_space_type = "VIEW_3D"
@@ -403,6 +433,19 @@ class SHD_PT_Panel3(Panel):
         #Export button
         self.layout.operator("shdr.exportdae")
         self.layout.operator("shdr.exportobj")
+
+# Tools Panel
+class SHD_PT_Panel4(Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_label = "Misc. Tools"
+    bl_category = "ASN"
+    
+    def draw(self, context):
+        my_tool = context.scene.my_tool
+        
+        self.layout.operator("shdr.removevertical")
+        self.layout.prop(my_tool, 'vertical_strength')
         
 class MyProperties(bpy.types.PropertyGroup):
     
@@ -410,7 +453,7 @@ class MyProperties(bpy.types.PropertyGroup):
         description="Only enter the course's unique identifier, WITHOUT _course. Example: 'luigi'",
         default="")
         
-
+    vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0, soft_max=1, default=0.63)
 
 
         
@@ -423,9 +466,11 @@ def register():
     bpy.utils.register_class(clssExport)
     bpy.utils.register_class(SHD_PT_Panel2)
     bpy.utils.register_class(SHD_PT_Panel3)
+    bpy.utils.register_class(SHD_PT_Panel4)
     bpy.utils.register_class(clssClr)
     bpy.utils.register_class(class_export_dae)
     bpy.utils.register_class(class_export_obj)
+    bpy.utils.register_class(Delete_Vertical_Geometry)
     bpy.utils.register_class(MyProperties)
     bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=MyProperties)
 
@@ -437,8 +482,10 @@ def unregister():
     bpy.utils.register_class(clssExport)
     bpy.utils.register_class(SHD_PT_Panel2)
     bpy.utils.register_class(SHD_PT_Panel3)
+    bpy.utils.register_class(SHD_PT_Panel4)
     bpy.utils.register_class(clssClr)
     bpy.utils.register_class(class_export_dae)
+    bpy.utils.register_class(Delete_Vertical_Geometry)
     bpy.utils.register_class(class_export_obj)
     del bpy.types.Scene.my_tool
     

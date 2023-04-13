@@ -19,8 +19,6 @@ In the 3D viewport, you'll find a new panel within the N menu called ASN. That p
 
 * **Vertex Transparency Shader Group:** Creates a node group in the active material of all selected meshess, which allows you to see texture transparency and vertex colors *with their transparency data*. This button does nothing if the mesh doesn't contain vertex colors *and* if the material doesn't have a texture.
 
-**These 3 buttons will give you an error if you try to apply them on non-mesh objects.**
-
 * **Remove Groups (for export):** Blender can't export materials with shader node groups, so use this button to remove groups from the materials of all selected meshes. ***NO LONGER NEEDED IF USING THE NEW EXPORT BUTTONS***
 
 ### Viewport Settings
@@ -30,14 +28,31 @@ In the 3D viewport, you'll find a new panel within the N menu called ASN. That p
 
 * **Course Name:** Gives your exports a name. You only need to add the course's unique identifier, so *don't* add `_course` to the name. Just call it `luigi`, or `rainbow`, for example.
 
-* **Export Selection as DAE:** Exports all selected objects and their textures as a file named `[coursename]_course.dae` to a folder called `course` (will be created if it doesn't exist) inside the directory where the current Blender file is saved.
+* **Export Selection as DAE:** Exports all selected objects to a file named `[coursename]_course.dae` inside a folder called `course` (will be created if it doesn't exist) inside the directory where the current Blender file is saved.
 
 * **Export Selecttion as OBJ:** Exports all selected objects as a file called `[coursename]_course.obj` to a folder called `course_collision` (will be created if it doesn't exist) inside the directory where the current Blender file is saved.
 
-These buttons export with default settings, except for `Selection Only` and `Triangulate` which are on.
+These buttons export with default settings, except for `Selection Only` and `Triangulate`, which are on for convenience.
 
-### Misc. tips
+Your directory would look like this after exporting with the buttons:
+```
+c:/my/files
+├───course
+│   ├───[coursename]_course.dae
+│   └───textures.png
+├───course_collision
+│   └───[coursename]_course.obj
+└───myBlenderFile.blend
+```
 
-Tip 1: You can quickly swap node groups by just clicking the button of the node you wanna replace it with.
+### Misc Tools
 
-Tip 2: If you wanna apply these settings to all selected meshes, I recommend clicking the `Alpha Shader Group button` first and then the `Vertex Shader Group` button. This way every object on your scene (assuming they have image textures) will have a Node Group applied.
+* **Remove Vertical Geometry:** Automatically removes all vertical geometry in the selected objects. Adjusting the `Strength` setting will alter how prone it is towards deleting slanted geometry. Using the default `0.63` is recommended.
+
+### Misc. info
+
+1. You can quickly swap node groups by just clicking the button of the node you wanna replace it with.
+
+1. If you wanna apply these settings to all selected meshes, I recommend clicking the `Alpha Shader Group button` first and then the `Vertex Shader Group` button. This way every object on your scene (assuming they have image textures) will have a Node Group applied.
+
+1. Most buttons (except for `Change Exposure & Gamma`) will give you an error if you click them non-mesh objects or meshes without materials are selected.
