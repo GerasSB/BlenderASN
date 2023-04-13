@@ -353,8 +353,10 @@ from bpy.types import Panel
 def checkSelection(self, context):
     for i in bpy.context.selected_objects:
         if i.data.name not in bpy.data.meshes.keys():
-            raise ValueError("You're selecting a non-mesh object. Aborting")
+            self.report({'ERROR'}, "You're selecting a non-mesh object. Aborting.")
+            raise ValueError("You're selecting a non-mesh object")
         elif i.active_material == None:
+            self.report({'ERROR'}, "One of your meshes doesn't have a material assigned. Aborting.")
             raise ValueError("One of your meshes doesn't have a material assigned")
 
 class SHD_PT_Panel(Panel):
@@ -406,6 +408,7 @@ class Delete_Vertical_Geometry(bpy.types.Operator):
     bl_label = "Remove Vertical Geometry"
     
     def execute(self, context):
+        checkSelection(self, context)
         deleteVerticalGeometry(context)
         return{'FINISHED'}
     
