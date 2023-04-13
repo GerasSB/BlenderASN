@@ -344,7 +344,7 @@ from bpy.types import Panel
 
 def checkSelection(self, context):
     for i in bpy.context.selected_objects:
-        if i.name not in bpy.data.meshes.keys():
+        if i.data.name not in bpy.data.meshes.keys():
             raise ValueError("You're selecting a non-mesh object. Aborting")
         elif i.active_material == None:
             raise ValueError("One of your meshes doesn't have a material assigned")
