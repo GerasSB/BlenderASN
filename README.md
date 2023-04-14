@@ -45,14 +45,16 @@ c:/my/files
 └───myBlenderFile.blend
 ```
 
-### Misc Tools
+### Collision Tools
 
-* **Remove Vertical Geometry:** Automatically removes all vertical geometry in the selected objects. Adjusting the `Strength` setting will alter how prone it is towards deleting slanted geometry. Using the default `0.63` is recommended.
+* **Remove Vertical Geometry:** Automatically removes all vertical geometry in the selected objects. Adjusting the `Strength` setting will alter how generous it is towards deleting slanted geometry. Using the default `0.63` is recommended.
 
-### Misc. info
+* **Roadtype Info:** Clicking the button will display the type of collision for the currently active material. For example, selecting the material `Roadtype_0x0200` would display `Kart and item wall`.
 
-1. You can quickly swap node groups by just clicking the button of the node you wanna replace it with.
+### Misc. tips
 
-1. If you wanna apply these settings to all selected meshes, I recommend clicking the `Alpha Shader Group button` first and then the `Vertex Shader Group` button. This way every object on your scene (assuming they have image textures) will have a Node Group applied.
+1. You can quickly swap node groups by selecting an object and clicking the button of the node you wanna replace it with.
+
+1. If you wanna preview your whole model to what it's gonna look like in game, I recommend selecting your whole model, clicking the `Alpha Shader Group button` first and then the `Vertex Shader Group` button. This way every object on your scene (assuming they have image textures) will have a Node Group applied.
 
 1. Most buttons (except for `Change Exposure & Gamma`) will give you an error if you click them non-mesh objects or meshes without materials are selected.

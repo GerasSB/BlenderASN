@@ -379,12 +379,15 @@ def roadtypeInfo(self, context):
     "Roadtype_0x0F": "Water/lava deadzone",
     "Roadtype_0x10": "Quicksand sinkhole",
     "Roadtype_0x11": "Sand deadzone w/ water",
-    "Roadtype_0x12": "Kart-exclusive wall wall",
+    "Roadtype_0x12": "Kart-exclusive wall",
     "Roadtype_0x13": "Heavy offroad",
-    "Roadtype_0x14": "Ramp boost",
+    "Roadtype_0x37": "Ramp boost for gaps",
+    "Roadtype_0x47": "Ramp boost for gaps",
     }
-
-    material_slot = bpy.context.active_object.active_material.name
+    try:
+        material_slot = bpy.context.active_object.active_material.name
+    except:
+        self.report({'ERROR'}, 'No material selected')
     for type in roadtypes:
         if type in material_slot:
             context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
@@ -485,7 +488,7 @@ class SHD_PT_Panel3(Panel):
 class SHD_PT_Panel4(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_label = "Misc. Tools"
+    bl_label = "Collision Tools"
     bl_category = "ASN"
     
     def draw(self, context):
@@ -500,10 +503,10 @@ class SHD_PT_Panel4(Panel):
 class MyProperties(bpy.types.PropertyGroup):
     
     course_name : bpy.props.StringProperty(name='',
-        description="Only enter the course's unique identifier, WITHOUT _course. Example: 'luigi'",
+        description="Only enter the course's unique identifier, WITHOUT _course. Example: luigi",
         default="")
         
-    vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0, soft_max=1, default=0.63)
+    vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0, soft_max=1, default=0.63, min=0, max=1)
     
     roadinfo : bpy.props.StringProperty(name='')
 
