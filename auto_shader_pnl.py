@@ -14,6 +14,7 @@ bl_info = {
 
 import bpy
 import os
+import bmesh
 
 #--Operators--
 
@@ -375,7 +376,7 @@ def roadtype_info(self, context):
                  
 
 
-class P1AutoShaderNodes(Panel):
+class P1_PT_AutoShaderNodes(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_label = "Auto Shader Nodes"
@@ -395,7 +396,7 @@ class P1AutoShaderNodes(Panel):
         #Remove Button
         self.layout.operator("shdr.export")
         
-class P2ViewportSettings(Panel):
+class P2_PT_ViewportSettings(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_label = "Viewport Settings"
@@ -407,13 +408,27 @@ class P2ViewportSettings(Panel):
         self.layout.operator("shdr.color")
 
 def select_vertical_geometry(context):
+    if bpy.context.selected_objects == []:
+        raise ValueError("Please select a mesh")
     strength = context.scene.my_tool.vertical_strength * 0.24
     bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_mode(type='FACE')
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.mesh.primitive_cylinder_add(vertices=200, end_fill_type='NOTHING', enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+    
+    # Create a bmesh access
+    bm = bmesh.from_edit_mesh(bpy.context.object.data)
+    bm.faces.ensure_lookup_table()
+
+    # Get faces access
+    bm.faces.ensure_lookup_table()
+    selected_faces = [face for face in bm.faces if face.select]
+            
     bpy.ops.mesh.select_similar(type='NORMAL', threshold=strength)
+    
+    # Delete everything on the selected_faces variable
+    bmesh.ops.delete(bm, geom =selected_faces, context='FACES')
     
 class SelectVerticalGeometry(bpy.types.Operator):
     """Selects all* vertical geometry from the selected object(s).
@@ -438,7 +453,7 @@ class RoadtypeInfo(bpy.types.Operator):
     
 
 # Export Panel
-class P3Export(Panel):
+class P3_PT_Export(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_label = "Export"
@@ -462,7 +477,7 @@ class P3Export(Panel):
         self.layout.operator("shdr.exportobj")
 
 # Tools Panel
-class P4CollisionTools(Panel):
+class P4_PT_CollisionTools(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_label = "Collision Tools"
@@ -516,14 +531,14 @@ class MyProperties(bpy.types.PropertyGroup):
 
 #--Blender stuff--        
 def register():
-    bpy.utils.register_class(P1AutoShaderNodes)
+    bpy.utils.register_class(P1_PT_AutoShaderNodes)
     bpy.utils.register_class(AlphaShader)
     bpy.utils.register_class(VertexShader)
     bpy.utils.register_class(VertexTransparencyShader)
     bpy.utils.register_class(ExportSelected)
-    bpy.utils.register_class(P2ViewportSettings)
-    bpy.utils.register_class(P3Export)
-    bpy.utils.register_class(P4CollisionTools)
+    bpy.utils.register_class(P2_PT_ViewportSettings)
+    bpy.utils.register_class(P3_PT_Export)
+    bpy.utils.register_class(P4_PT_CollisionTools)
     bpy.utils.register_class(ColorScene)
     bpy.utils.register_class(ExportDae)
     bpy.utils.register_class(ExportObj)
@@ -533,14 +548,14 @@ def register():
     bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=MyProperties)
 
 def unregister():
-    bpy.utils.unregister_class(P1AutoShaderNodes)
+    bpy.utils.unregister_class(P1_PT_AutoShaderNodes)
     bpy.utils.unregister_class(AlphaShader)
     bpy.utils.unregister_class(VertexShader)
     bpy.utils.unregister_class(VertexTransparencyShader)
     bpy.utils.unregister_class(ExportSelected)
-    bpy.utils.unregister_class(P2ViewportSettings)
-    bpy.utils.unregister_class(P3Export)
-    bpy.utils.unregister_class(P4CollisionTools)
+    bpy.utils.unregister_class(P2_PT_ViewportSettings)
+    bpy.utils.unregister_class(P3_PT_Export)
+    bpy.utils.unregister_class(P4_PT_CollisionTools)
     bpy.utils.unregister_class(ColorScene)
     bpy.utils.unregister_class(ExportDae)
     bpy.utils.unregister_class(RoadtypeInfo)
