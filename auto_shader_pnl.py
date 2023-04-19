@@ -406,7 +406,7 @@ class P2ViewportSettings(Panel):
         #Alpha Button
         self.layout.operator("shdr.color")
 
-def delete_vertical_geometry(context):
+def select_vertical_geometry(context):
     strength = context.scene.my_tool.vertical_strength * 0.24
     bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
     bpy.ops.object.mode_set(mode='EDIT')
@@ -414,18 +414,17 @@ def delete_vertical_geometry(context):
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.mesh.primitive_cylinder_add(vertices=200, end_fill_type='NOTHING', enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
     bpy.ops.mesh.select_similar(type='NORMAL', threshold=strength)
-    bpy.ops.mesh.delete(type='FACE')
     
-class DeleteVerticalGeometry(bpy.types.Operator):
-    """Removes all* vertical geometry from the selected object(s).
+class SelectVerticalGeometry(bpy.types.Operator):
+    """Selects all* vertical geometry from the selected object(s).
     
 * Adjust the strength to taste. The default of 0.63 is recommended"""
     bl_idname = "shdr.removevertical"
-    bl_label = "Remove Vertical Geometry"
+    bl_label = "Select Vertical Geometry"
     
     def execute(self, context):
         check_selection(self, context)
-        delete_vertical_geometry(context)
+        select_vertical_geometry(context)
         return{'FINISHED'}
     
 class RoadtypeInfo(bpy.types.Operator):
@@ -528,7 +527,7 @@ def register():
     bpy.utils.register_class(ColorScene)
     bpy.utils.register_class(ExportDae)
     bpy.utils.register_class(ExportObj)
-    bpy.utils.register_class(DeleteVerticalGeometry)
+    bpy.utils.register_class(SelectVerticalGeometry)
     bpy.utils.register_class(RoadtypeInfo)
     bpy.utils.register_class(MyProperties)
     bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=MyProperties)
@@ -545,7 +544,7 @@ def unregister():
     bpy.utils.unregister_class(ColorScene)
     bpy.utils.unregister_class(ExportDae)
     bpy.utils.unregister_class(RoadtypeInfo)
-    bpy.utils.unregister_class(DeleteVerticalGeometry)
+    bpy.utils.unregister_class(SelectVerticalGeometry)
     bpy.utils.unregister_class(ExportObj)
     bpy.utils.unregister_class(MyProperties)
     del bpy.types.Scene.my_tool

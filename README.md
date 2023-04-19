@@ -47,7 +47,7 @@ c:/my/files
 
 ### Collision Tools
 
-* **Remove Vertical Geometry:** Automatically removes all vertical geometry in the selected objects. Adjusting the `Strength` setting will alter how generous it is towards deleting slanted geometry. Using the default `0.63` is recommended.
+* **Select Vertical Geometry:** Automatically selects all vertical geometry in the selected objects. Adjusting the `Strength` setting will alter how generous it is towards selecting slanted geometry. Using the default `0.63` is recommended.
 
 * **Roadtype Info:** Clicking the button will display the type of collision for the currently active material. For example, selecting the material `Roadtype_0x0200` would display `Kart and item wall`.
 
