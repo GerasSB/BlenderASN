@@ -62,34 +62,32 @@ def alpha_shader(context):
     sO = bpy.context.selected_objects
     for loopy in sO:
         currentmat = loopy.active_material.node_tree.nodes
-        if currentmat.find('Principled BSDF') > -1 and currentmat.find('Material Output') > -1 and currentmat.find('Image Texture') > -1:
-            #Find and remove Principled BSDF and Material Output nodes
-            currentmatdelBSDF = currentmat.get('Principled BSDF')
-            currentmat.remove(currentmatdelBSDF)
-            currentmatdelOutput = currentmat.get('Material Output')
-            currentmat.remove(currentmatdelOutput)
-        
-        #Creates Group Node inside material if there is none
+        if currentmat.find('Image Texture') > -1:
+            if currentmat.find('Principled BSDF') > -1 and currentmat.find('Material Output') > -1:
+                #Find and remove Principled BSDF and Material Output nodes
+                currentmatdelBSDF = currentmat.get('Principled BSDF')
+                currentmat.remove(currentmatdelBSDF)
+                currentmatdelOutput = currentmat.get('Material Output')
+                currentmat.remove(currentmatdelOutput)
+            
+            #Creates Group Node inside material if there is none
             if currentmat.find('AlphaNode') == -1 and currentmat.find('Image Texture') > -1:
                 newNodeGroup = currentmat.new('ShaderNodeGroup')#Add empty Node Group to material
                 newNodeGroup.node_tree = bpy.data.node_groups['TransparencyGroup']#Convert empty Node Group to the TransparencyGroup
                 loopy.active_material.node_tree.nodes["Group"].name = "AlphaNode" #Change the Node Group's name
-            
-            linkin = loopy.active_material.node_tree.links #Create link reference
-            alphaGrpNode = currentmat.get('AlphaNode')
-            #Linking the texture to the node
+
             for noderinno in currentmat:
                 if noderinno != currentmat.get('AlphaNode') and noderinno != currentmat.get('Image Texture'):
                     currentmat.remove(noderinno)
-        #if currentmat.find('Image Texture') > -1:
-            #if currentmat.find('VertexNode') > -1:
-                #delVnode = currentmat.get('VertexNode')
-                #currentmat.remove(delVnode)
-            getTex = currentmat.get('Image Texture') #Creates a variable for the Texture node
+
+            #Link texture to nodes
+            linkin = loopy.active_material.node_tree.links
+            alphaGrpNode = currentmat.get('AlphaNode')
+            getTex = currentmat.get('Image Texture')
             linkin.new(getTex.outputs[0], alphaGrpNode.inputs[1]) #Links color to group node
             linkin.new(getTex.outputs[1], alphaGrpNode.inputs[0]) #Links alpha to group node
-            
-        loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
+                
+            loopy.active_material.blend_method = 'HASHED' #Sets material blend method to Alpha Hashed
             
 class AlphaShader(bpy.types.Operator):
     """Give selected meshes the Alpha shader group. Selected mesh needs an image
