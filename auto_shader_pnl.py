@@ -148,7 +148,7 @@ def create_vertex_group(vertexGroup, context):
     
     vertexMixRGB = vertexGroup.nodes.new('ShaderNodeMixRGB')
     vertexMixRGB.location = (-600,0)
-    vertexMixRGB.inputs[0].default_value = 1
+    vertexMixRGB.inputs[0].default_value = 0.98
     vertexMixRGB.blend_type = 'MULTIPLY'
     
     
@@ -269,8 +269,8 @@ before exporting"""
 #Color Button       
 def button_04(context):
     scn = bpy.context.scene
-    scn.view_settings.exposure = 6
-    scn.view_settings.gamma = 0.4
+    scn.view_settings.exposure = 3.95
+    scn.view_settings.gamma = 1
 
             
 class ColorScene(bpy.types.Operator):
