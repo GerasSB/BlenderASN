@@ -96,9 +96,12 @@ texture for this to work"""
     bl_label = "Alpha Shader Group"
     
     def execute(self,context):
-        check_selection(self, context)
-        alpha_shader(context)
-        return{'FINISHED'}
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            alpha_shader(context)
+            return{'FINISHED'}
 
 #Button 2
 def vertex_shader(context):
@@ -207,10 +210,13 @@ vertex colors AND image textures for this button to work"""
     bl_label = "Vertex Shader Group"
     
     def execute(self,context):
-        check_selection(self, context)
-        vertex_shader(context)
-        link_vertex_nodes('VertexGroup','VertexNode', 'HASHED', context)
-        return{'FINISHED'}
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            vertex_shader(context)
+            link_vertex_nodes('VertexGroup','VertexNode', 'HASHED', context)
+            return{'FINISHED'}
 
 class VertexTransparencyShader(bpy.types.Operator):
     """Give selected meshes the Vertex Transparency shader group. It allows to
@@ -220,10 +226,13 @@ textures for this button to work"""
     bl_label = "Vertex Transparency Group"
     
     def execute(self,context):
-        check_selection(self, context)
-        vertex_alpha_shader(context)
-        link_vertex_nodes('VertexTGroup','VertexTNode', 'HASHED', context)
-        return{'FINISHED'}
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            vertex_alpha_shader(context)
+            link_vertex_nodes('VertexTGroup','VertexTNode', 'HASHED', context)
+            return{'FINISHED'}
 
 #Button 3 - Remove groups
 def remove_groups(context):
@@ -262,9 +271,12 @@ before exporting"""
     bl_label = "Remove Groups (for export)"
     
     def execute(self,context):
-        check_selection(self, context)
-        remove_groups(context)
-        return{'FINISHED'} 
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            remove_groups(context)
+            return{'FINISHED'}
     
 #Color Button       
 def button_04(context):
@@ -291,9 +303,12 @@ file's current directory"""
     bl_label = "Export Selection as DAE"
     
     def execute(self,context):
-        check_selection(self, context)
-        export_checks(self, context, '.dae')
-        return{'FINISHED'}
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            export_checks(self, context, '.dae')
+            return{'FINISHED'}
 
 class ExportObj(bpy.types.Operator):
     """Export all selected objects as OBJ to a 'course_collision' folder inside
@@ -302,9 +317,12 @@ the Blender file's current directory"""
     bl_label = "Export Selection as OBJ"
     
     def execute(self,context):
-        check_selection(self, context)
-        export_checks(self, context, '.obj')
-        return{'FINISHED'}
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            export_checks(self, context, '.obj')
+            return{'FINISHED'}
 
 def dae_export(pathname, context):
         remove_groups(context)
@@ -353,10 +371,10 @@ def check_selection(self, context):
     for i in bpy.context.selected_objects:
         if i.data.name not in bpy.data.meshes.keys():
             self.report({'ERROR'}, "You're selecting a non-mesh object. Aborting.")
-            raise ValueError("You're selecting a non-mesh object")
+            return {'CANCELLED'}
         elif i.active_material == None:
             self.report({'ERROR'}, "One of your meshes doesn't have a material assigned. Aborting.")
-            raise ValueError("One of your meshes doesn't have a material assigned")
+            return {'CANCELLED'}
 
 def roadtype_info(self, context):
     roadtypes = context.scene.my_tool.roadtypes
@@ -426,9 +444,10 @@ class P2_PT_ViewportSettings(Panel):
         #Alpha Button
         self.layout.operator("shdr.color")
 
-def select_vertical_geometry(context):
+def select_vertical_geometry(self, context):
     if bpy.context.selected_objects == []:
-        raise ValueError("Please select a mesh")
+        self.report({'ERROR'}, "Please select a mesh")
+        return {'CANCELLED'}
     strength = context.scene.my_tool.vertical_strength * 0.24
     bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
     bpy.ops.object.mode_set(mode='EDIT')
@@ -457,9 +476,12 @@ class SelectVerticalGeometry(bpy.types.Operator):
     bl_label = "Select Vertical Geometry"
     
     def execute(self, context):
-        check_selection(self, context)
-        select_vertical_geometry(context)
-        return{'FINISHED'}
+        result = check_selection(self, context)
+        if result == {'CANCELLED'}:
+            return {'CANCELLED'}
+        else:
+            select_vertical_geometry(self, context)
+            return{'FINISHED'}
     
 class RoadtypeInfo(bpy.types.Operator):
     """Tells you the type of collision of your currently active material"""
