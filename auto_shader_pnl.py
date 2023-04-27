@@ -360,19 +360,40 @@ def check_selection(self, context):
 
 def roadtype_info(self, context):
     roadtypes = context.scene.my_tool.roadtypes
+    VALID_MAT_LENGTH = [26, 31]
+    VALID_DEADZONES = ['0x0F', '0x0A']
     try:
         material_slot = bpy.context.active_object.active_material.name
     except:
         self.report({'ERROR'}, 'No material selected')
+        return {'CANCELLED'}
     else:
         for type in roadtypes:
             if type in material_slot:
-                context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
-                return {'FINISHED'}
+                if len(material_slot) in VALID_MAT_LENGTH and type.removeprefix('Roadtype_') in VALID_DEADZONES:
+                    context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
+                    context.scene.my_tool.roadinfo2 = falling_animation(material_slot)
+                    return {'FINISHED'}
+                else:
+                    context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
+                    context.scene.my_tool.roadinfo2 = ''
+                    return {'FINISHED'}
     self.report({'ERROR'}, 'No collision has the name ' + "'" + material_slot + "'")
     context.scene.my_tool.roadinfo = 'Not a valid collision name'
-                 
+    context.scene.my_tool.roadinfo2 = ''
+    return {'FINISHED'}
 
+def falling_animation(material_name):
+    falling_id = material_name[-3]
+    animation_type = ''
+    if falling_id == '1':
+        animation_type = "Falling animation enabled"
+    elif falling_id == '0':
+        animation_type = "Falling animation disabled"
+    else:
+        animation_type = "Invalid falling animation ID"
+    return animation_type
+        
 
 class P1_PT_AutoShaderNodes(Panel):
     bl_space_type = "VIEW_3D"
@@ -489,6 +510,7 @@ class P4_PT_CollisionTools(Panel):
         self.layout.separator()
         self.layout.operator("shdr.roadtypeinfo")
         self.layout.label(text=my_tool.roadinfo)
+        self.layout.label(text=my_tool.roadinfo2)
         
 class MyProperties(bpy.types.PropertyGroup):
     
@@ -499,6 +521,7 @@ class MyProperties(bpy.types.PropertyGroup):
     vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0, soft_max=1, default=0.63, min=0, max=1)
     
     roadinfo : bpy.props.StringProperty(name='')
+    roadinfo2 : bpy.props.StringProperty(name='')
 
     roadtypes = {
         "Roadtype_0x00": "Medium offroad, mud",
