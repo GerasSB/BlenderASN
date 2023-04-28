@@ -471,7 +471,9 @@ def select_vertical_geometry(self, context):
 class SelectVerticalGeometry(bpy.types.Operator):
     """Selects all* vertical geometry from the selected object(s).
     
-* Adjust the strength to taste. The default of 0.63 is recommended"""
+* Adjust the strength to taste (the lower the number, the steeper the polygon).
+The default of 0.50 is recommended as walls won't get steeper than that, though
+roads can go as steep as 0.38"""
     bl_idname = "shdr.removevertical"
     bl_label = "Select Vertical Geometry"
     
@@ -540,7 +542,7 @@ class MyProperties(bpy.types.PropertyGroup):
         description="Only enter the course's unique identifier, WITHOUT _course. Example: luigi",
         default="")
         
-    vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0, soft_max=1, default=0.63, min=0, max=1)
+    vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0.37, soft_max=1, default=0.50, min=0, max=1)
     
     roadinfo : bpy.props.StringProperty(name='')
     roadinfo2 : bpy.props.StringProperty(name='')
