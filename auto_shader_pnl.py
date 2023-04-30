@@ -378,8 +378,9 @@ def check_selection(self, context):
 
 def roadtype_info(self, context):
     roadtypes = context.scene.my_tool.roadtypes
-    VALID_MAT_LENGTH = [26, 31]
-    VALID_DEADZONES = ['0x0F', '0x0A']
+    context.scene.my_tool.roadinfo_falling = '-'
+    context.scene.my_tool.roadinfo_index = '-'
+    context.scene.my_tool.roadinfo_respawn = '-'
     try:
         material_slot = bpy.context.active_object.active_material.name
     except:
@@ -388,29 +389,53 @@ def roadtype_info(self, context):
     else:
         for type in roadtypes:
             if type in material_slot:
-                if len(material_slot) in VALID_MAT_LENGTH and type.removeprefix('Roadtype_') in VALID_DEADZONES:
-                    context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
-                    context.scene.my_tool.roadinfo2 = falling_animation(material_slot)
-                    return {'FINISHED'}
-                else:
-                    context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
-                    context.scene.my_tool.roadinfo2 = ''
-                    return {'FINISHED'}
+                context.scene.my_tool.roadinfo = type.removeprefix('Roadtype_') + " = " + roadtypes[type]
+                context.scene.my_tool.roadinfo_index = geosplash_index(context, type, material_slot)
+                context.scene.my_tool.roadinfo_falling = falling_animation(context, type, material_slot)
+                context.scene.my_tool.roadinfo_respawn = respawn_id(type, material_slot)
+                return {'FINISHED'}
     self.report({'ERROR'}, 'No collision has the name ' + "'" + material_slot + "'")
     context.scene.my_tool.roadinfo = 'Not a valid collision name'
-    context.scene.my_tool.roadinfo2 = ''
     return {'FINISHED'}
 
-def falling_animation(material_name):
+def falling_animation(context, type, material_name):
+    VALID_MAT_LENGTH = context.scene.my_tool.VALID_MAT_LENGTH
+    VALID_DEADZONES = ['0x0F', '0x0A']
     falling_id = material_name[-3]
     animation_type = ''
-    if falling_id == '1':
-        animation_type = "Falling animation enabled"
-    elif falling_id == '0':
-        animation_type = "Falling animation disabled"
+    if len(material_name) in VALID_MAT_LENGTH and type.removeprefix('Roadtype_') in VALID_DEADZONES:
+        if falling_id == '1':
+            animation_type = "Falling animation enabled"
+        elif falling_id == '0':
+            animation_type = "Falling animation disabled"
+        else:
+            animation_type = "Invalid falling animation ID"
+        return animation_type
     else:
-        animation_type = "Invalid falling animation ID"
-    return animation_type
+        return '-'
+
+def geosplash_index(context, type, material_name):
+    VALID_MAT_LENGTH = context.scene.my_tool.VALID_MAT_LENGTH
+    if type.removeprefix('Roadtype_') == '0x0F':
+        if len(material_name) in VALID_MAT_LENGTH:
+            index = 'GeoSplash Index = ' + str(material_name[-1])
+            return index
+        else:
+            return '!!! MISSING INDEX !!!'
+    else:
+        return '-'
+
+def respawn_id(type, material_name):
+    VALID_RESPAWN = ['0x05', '0x07', '0x09', '0x0A', '0x0B', '0x0D', '0x0E', '0x0F', '0x10', '0x11', '0x37', '0x47']
+    if type.removeprefix('Roadtype_') in VALID_RESPAWN:
+        if material_name[13] == '0':
+            respawnid = str(material_name[14])
+        else:
+            respawnid = str(material_name[13:15])
+        respawnid = 'Respawn ID = ' + respawnid
+        return respawnid
+    else:
+        return '-'
         
 
 class P1_PT_AutoShaderNodes(Panel):
@@ -534,7 +559,9 @@ class P4_PT_CollisionTools(Panel):
         self.layout.separator()
         self.layout.operator("shdr.roadtypeinfo")
         self.layout.label(text=my_tool.roadinfo)
-        self.layout.label(text=my_tool.roadinfo2)
+        self.layout.label(text=my_tool.roadinfo_respawn)
+        self.layout.label(text=my_tool.roadinfo_falling)
+        self.layout.label(text=my_tool.roadinfo_index)
         
 class MyProperties(bpy.types.PropertyGroup):
     
@@ -545,7 +572,9 @@ class MyProperties(bpy.types.PropertyGroup):
     vertical_strength : bpy.props.FloatProperty(name='Strength', soft_min=0.37, soft_max=1, default=0.50, min=0, max=1)
     
     roadinfo : bpy.props.StringProperty(name='')
-    roadinfo2 : bpy.props.StringProperty(name='')
+    roadinfo_respawn : bpy.props.StringProperty(name='-')
+    roadinfo_index : bpy.props.StringProperty(name='-')
+    roadinfo_falling : bpy.props.StringProperty(name='-')
 
     roadtypes = {
         "Roadtype_0x00": "Medium offroad, mud",
@@ -571,6 +600,8 @@ class MyProperties(bpy.types.PropertyGroup):
         "Roadtype_0x37": "Ramp boost for gaps",
         "Roadtype_0x47": "Ramp boost for gaps"
     }
+
+    VALID_MAT_LENGTH = [26, 31]
 
 
 
