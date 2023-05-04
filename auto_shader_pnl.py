@@ -360,6 +360,9 @@ def export_checks(self, context, type):
         elif course_name == '':
             self.report({'ERROR'}, "Please enter your course's name")
         else:
+            for i in bpy.context.selected_objects:
+                if 'EXCLUDE' in i.name:
+                    i.select_set(False)
             set_pathname(self, context, type, course_name)
     else:
         self.report({'ERROR'}, 'Save your Blender project somewhere before exporting')
@@ -370,8 +373,10 @@ from bpy.types import Panel
 def check_selection(self, context):
     for i in bpy.context.selected_objects:
         if i.data.name not in bpy.data.meshes.keys():
-            self.report({'ERROR'}, "You're selecting a non-mesh object. Aborting.")
-            return {'CANCELLED'}
+            i.select_set(False)
+            # self.report({'ERROR'}, "You're selecting a non-mesh object. Aborting.")
+            # return {'CANCELLED'}
+            continue
         elif i.active_material == None:
             self.report({'ERROR'}, "One of your meshes doesn't have a material assigned. Aborting.")
             return {'CANCELLED'}
