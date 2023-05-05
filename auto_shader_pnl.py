@@ -303,6 +303,7 @@ file's current directory"""
     bl_label = "Export Selection as DAE"
     
     def execute(self,context):
+        exclude(context)
         result = check_selection(self, context)
         if result == {'CANCELLED'}:
             return {'CANCELLED'}
@@ -317,6 +318,7 @@ the Blender file's current directory"""
     bl_label = "Export Selection as OBJ"
     
     def execute(self,context):
+        exclude(context)
         result = check_selection(self, context)
         if result == {'CANCELLED'}:
             return {'CANCELLED'}
@@ -360,25 +362,26 @@ def export_checks(self, context, type):
         elif course_name == '':
             self.report({'ERROR'}, "Please enter your course's name")
         else:
-            for i in bpy.context.selected_objects:
-                if 'EXCLUDE' in i.name:
-                    i.select_set(False)
             set_pathname(self, context, type, course_name)
     else:
         self.report({'ERROR'}, 'Save your Blender project somewhere before exporting')
-        
+
+def exclude(context):
+    for i in bpy.context.selected_objects:
+        if 'EXCLUDE' in i.name:
+            i.select_set(False)     
 #--Panel--
 from bpy.types import Panel
 
 def check_selection(self, context):
     for i in bpy.context.selected_objects:
-        if i.data.name not in bpy.data.meshes.keys():
+        if i.type != 'MESH':
             i.select_set(False)
             # self.report({'ERROR'}, "You're selecting a non-mesh object. Aborting.")
             # return {'CANCELLED'}
             continue
         elif i.active_material == None:
-            self.report({'ERROR'}, "One of your meshes doesn't have a material assigned. Aborting.")
+            self.report({'ERROR'}, "Mesh [" + i.name + "] doesn't have a material assigned. Aborting.")
             return {'CANCELLED'}
 
 def roadtype_info(self, context):
