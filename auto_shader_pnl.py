@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Auto Shader Nodes",
     "author": "Geras",
-    "version": (1, 2),
+    "version": (1, 3),
     "blender": (3, 5),
     "category": "Node",
     "location": "3DView",
